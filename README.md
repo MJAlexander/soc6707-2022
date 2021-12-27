@@ -1,1 +1,3 @@
-# soc6707-2022
+# soc6707
+
+Materials for IDA, Winter 2022
