@@ -1,0 +1,52 @@
+---
+title: "Install R and RStudio"
+author: "Monica Alexandeer"
+date: "4 January 2022"
+output: pdf_document
+---
+
+In SOC6707 we will be using the statistical programming language R through the RStudio environment. You will need to install both R and RStudio onto your computer. This document describes the steps of installation, and provides a test to make sure everything is working properly. 
+
+# Install R
+
+1. Go to http://cran.utstat.utoronto.ca/
+2. Select the download link that is relevant to you: if you have a Mac, select "Download R for (Mac) OS X", if you have a Windows machine, select "Download R for Windows". 
+3. If you have a Mac, click on the "R-4.0.2.pkg" link. If you have a Windows machine, click on the "base" link, then click on the "Download R 4.0.2 for Windows" link.
+4. Open the downloaded file and follow the install instructions on your machine.
+
+
+# Install RStudio
+
+1. Go to https://rstudio.com/products/rstudio/download/
+2. Scroll down and click the "Download" button under "RStudio Desktop Open Source License Free"
+3. Click the "Download RStudio" button (it will either say for Mac or Windows)
+4. Open the downloaded file and follow the install instructions on your machine.
+
+# Install tinytex
+
+You may need to install a TeX distribution (you probably will). If you're not sure if you have one, go to the next step ("Check everything worked by knitting a RMarkdown document"), and if it doesn't work, you will need to install tinytex. 
+
+1. Open RStudio
+2. Click in the Console window (on the left)
+3. Type `install.packages('tinytex')` after the `>` and press return 
+4. Type `tinytex::install_tinytex()` after the `>` and press return (see below)
+
+\includegraphics{fig/tinytex.png}
+
+
+\newpage
+# Check everything worked by knitting a RMarkdown document
+
+1. Open RStudio
+2. click the picture of the document with a green cross in the top left hand side
+3. Select R Markdown
+
+\includegraphics{fig/new_doc.png}
+
+4. Under "Default Output Format" select PDF and press OK
+5. Go File > Save and save the document
+6. In the Menu bar above the document, click "Knit". This should result in a PDF document that looks like below. 
+
+\includegraphics{fig/rmd.png}
+
+
