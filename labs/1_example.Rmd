@@ -1,0 +1,96 @@
+---
+title: "Example RMarkdown"
+author: "Monica Alexander"
+date: "10/01/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Hi my name is Monica blah blah 
+
+```{r}
+# this is a comment
+x <- 853
+y <- 90
+x+y
+```
+
+Read in the GSS dataset
+
+```{r}
+#  load in tidyverse package 
+library(tidyverse)
+# read in the GSS
+gss <- read_csv(file = "../data/gss.csv")
+```
+
+Look at the top of the GSS dataset
+
+```{r}
+head(gss)
+```
+Look at the dimensions of the GSS
+
+```{r}
+ncol(gss) # number of columns
+nrow(gss) # rows
+```
+
+# Important functions
+
+## Select columns
+
+Let's look at column names. The function colnames returns a vector of length 85, showing us every column name
+
+```{r}
+# column names
+colnames(gss)
+```
+
+Let's select the age variable
+
+```{r}
+select(gss,age)
+```
+
+## The pipe 
+
+The pipe is the funny thing that is %>% -- remember from the lecture, when you see a pipe, read it as "and then"
+
+```{r}
+gss %>% 
+  select(age, region, occupation)
+```
+NOTE: the above code selects three columns, but doesn't assign/save the output. If we want to assign this output to use again, just use the back arrow syntax
+
+```{r}
+gss_ageregionocc <- gss %>% 
+  select(age, region, occupation)
+
+# look at this object
+gss_ageregionocc
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
