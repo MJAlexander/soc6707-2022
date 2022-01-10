@@ -738,25 +738,25 @@ gss %>%
 <!-- Will leave it as an exercise to find median, mode, standard deviation, minimum and maximum. (Hint: for the mode, use `arrange`) -->
 
 
-<!-- <!-- ## Preview: graphing --> -->
+<!-- ## Preview: graphing -->
 
 
-<!-- <!-- \tiny --> -->
-<!-- <!-- ```{r, echo=TRUE, warning=FALSE, fig.height=6} --> -->
-<!-- <!-- ggplot(data = gss %>% filter(marital_status!= "NA"), aes(age)) +  --> -->
-<!-- <!--   geom_histogram(position = "dodge", fill = "lightblue", bins = 20) +  --> -->
-<!-- <!--   facet_wrap(~marital_status)  --> -->
-<!-- <!-- ``` --> -->
+<!-- \tiny -->
+<!-- ```{r, echo=TRUE, warning=FALSE, fig.height=6} -->
+<!-- ggplot(data = gss %>% filter(marital_status!= "NA"), aes(age)) +  -->
+<!--   geom_histogram(position = "dodge", fill = "lightblue", bins = 20) +  -->
+<!--   facet_wrap(~marital_status)  -->
+<!-- ``` -->
 
-## Why you should learn R
+<!-- ## Why you should learn R -->
 
-- Free, open, reproducible, large community
-- Used in industry
-- Relatively easier to implement powerful stat methods
-- Once you get the hang of it, can use to make
-    + slides 
-    + websites (e.g. [mine](https://www.monicaalexander.com/))
-    + interactive applications (e.g. [here](https://monica-alexander.shinyapps.io/foster_care/))
+<!-- - Free, open, reproducible, large community -->
+<!-- - Used in industry -->
+<!-- - Relatively easier to implement powerful stat methods -->
+<!-- - Once you get the hang of it, can use to make -->
+<!--     + slides  -->
+<!--     + websites (e.g. [mine](https://www.monicaalexander.com/)) -->
+<!--     + interactive applications (e.g. [here](https://monica-alexander.shinyapps.io/foster_care/)) -->
 
 <!-- ## This week's lab -->
 

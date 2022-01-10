@@ -79,7 +79,6 @@ Throughout this course we will be using the tidyverse package a lot. You will ne
 
 ```{r}
 # install.packages("tidyverse")
-# install.packages("dplyr")
 ```
 
 Once tidyverse is installed, load it in using the library command:
@@ -188,9 +187,8 @@ The `summarize` function is used to give summaries of one or more columns of a d
 # Review questions
 
 1. Create a new R Markdown file for these review questions
-2. Create a variable called "my_name" and assign a character string containing your name to it
-3. Find the mean age at first birth (age_at_first_birth) of respondents in the GSS    
-4. Create a new dataset that just contains GSS respondents who are less than 20 years old. 
-5. How many rows does the dataset in step 4 have?
-6. What is the largest case id in the dataset in step 4?
+2. Find the mean age at first birth (age_at_first_birth) of respondents in the GSS
+3. Create a new dataset that just contains GSS respondents who are less than 20 years old. 
+4. How many rows does the dataset in step 4 have?
+5. What is the largest case id in the dataset in step 3?
 
