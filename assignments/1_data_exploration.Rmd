@@ -94,7 +94,7 @@ gss %>%
 
 i) Calculate the correlation between age and age at first birth. Interpret your finding. 
 ii) Calculate the mean age of first birth by age group (`age_group`) and education level (`has_bachelor_or_higher`). Note that this question uses the categorical variable `age_group` (not the continuous variable `age`)
-iv) Create a line chart of the results from part iii), plotting mean age of first birth (y axis) versus age group (x axis), with a separate line (and different color) for education level. Comment on your chart. Does the pattern over age agree with your findings from part i)? Why or why not?
+ii) Create a line chart of the results from part iii), plotting mean age of first birth (y axis) versus age group (x axis), with a separate line (and different color) for education level. Comment on your chart. Does the pattern over age agree with your findings from part i)? Why or why not?
 
 ```{r}
 
@@ -114,7 +114,7 @@ gss %>%
 ```
 
 \newpage
-# Question 2 (35 points)
+# Question 2 (30 points)
 
 This question relates to the country indicators dataset. You will be looking at two country's fertility rate (TFR) and child mortality rate. Specifically, the two variables are
 
@@ -170,7 +170,7 @@ country_ind_select %>%
 
 \newpage
 
-# Question 3 (35 points)
+# Question 3 (40 points)
 
 This question relates to the birthweight dataset, which lists the birth weight (in grams) of sample of 500 babies. 
 

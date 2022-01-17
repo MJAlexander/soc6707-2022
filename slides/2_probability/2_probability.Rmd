@@ -15,6 +15,13 @@ library(tidyverse)
 
 ## Announcements
 
+- Assignment 1 is up
+- tidyverse, some plotting, some probabilities
+- Also added a 'template' (helpful? maybe not?)
+- Also due is research proposal
+- Datasets you need are on Quercus
+- Discussion boards are up
+
 
 ## What's the point of today
 

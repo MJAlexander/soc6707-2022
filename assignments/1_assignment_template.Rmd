@@ -1,0 +1,206 @@
+---
+title: "SOC6707 Assignment 1 Template"
+author: "Your name here"
+date: "date here"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r,  echo = FALSE}
+library(tidyverse) # need to load in tidyverse
+```
+
+
+# Question 1
+
+## a)
+
+i) 
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+ii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+iii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+## b)
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+## c)
+
+i) 
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+ii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+iii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+# Question 2
+
+## a)
+
+i) 
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+ii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+iii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+## b)
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+## c)
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+# Question 3
+
+## a) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+## b)
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+## c) 
+
+
+i) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+ii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+iii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+## d) 
+
+i) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+ii) 
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+## e)
+
+YOUR ANSWER HERE
+
+```{r}
+# YOUR CODE HERE
+```
+
+
+
+
