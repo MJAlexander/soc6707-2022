@@ -1,0 +1,131 @@
+---
+title: "Lab 3"
+author: "Monica Alexander"
+date: "24/01/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+What we're going to go through
+
+- calculate the proportion of respondents who have a non-missing observation for age of start of relationship by sex
+- plot histogram of age of start of relationship by sex 
+
+```{r}
+library(tidyverse)
+gss <- read_csv("data/gss.csv")
+colnames(gss)
+```
+
+
+## proportion of respondents with non-missing observations for age of start of relationship
+
+Creating a new variable to check whether age_start_relationship is missing (DONT NEED TO DO, JUST FOR UNDERSTANDING)
+```{r}
+gss %>% 
+  select(sex, age_start_relationship) %>% 
+  mutate(is_missing = is.na(age_start_relationship))
+```
+
+Get the sum of the number of people with missing values:
+```{r}
+gss %>% 
+  summarize(n_miss = sum(is.na(age_start_relationship)))
+```
+To get the number of people with non-missing values, we use ! (= "not")
+
+```{r}
+gss %>% 
+  summarize(n_miss = sum(!is.na(age_start_relationship)))
+```
+If we wanted to calculate the number of non-missing values by sex,
+
+```{r}
+gss %>% 
+  group_by(sex) %>% 
+  summarize(n_non_miss = sum(!is.na(age_start_relationship)))
+```
+Actually want proportion of non missing respondents by sex
+
+```{r}
+gss %>% 
+  group_by(sex) %>% 
+  summarize(n_non_miss = sum(!is.na(age_start_relationship)),
+            n_total = n(),# total number of rows 
+            prop = n_non_miss/n_total) 
+```
+
+# plot histogram of age of start of relationship by sex  
+
+We;re going to make a histogram in ggplot.
+The first part of a ggplot is always the function `ggplot`.
+There are two main piece of the ggplot function: the data (where your variables are coming from), and the aesthetics aes() (what your x, y, groups etc  are).
+
+```{r}
+ggplot(data = gss, aes(x = age_start_relationship)) 
+```
+Next step is to tell ggplot what type of graph you want. All graph types start with the prefix geom_
+
+```{r}
+ggplot(data = gss, aes(x = age_start_relationship)) +
+  geom_histogram(binwidth = 1)
+```
+We wanted a histogram of age of start of relationship by sex. To do this we're going to specify the fill color to be a function of sex. 
+
+```{r}
+ggplot(data = gss, aes(x = age_start_relationship, fill = sex)) +
+  geom_histogram(binwidth = 1)
+```
+MAke histograms next to each other and do some label stuff
+
+```{r}
+ggplot(data = gss, aes(x = age_start_relationship, fill = sex)) +
+  geom_histogram(position = "dodge")+
+  labs(title = "Distribution of age of start of relationship by sex", 
+       subtitle = "GSS 2017",
+       x = "Age when relationship started (years)")
+```
+
+Different plots are relatively straight forward just by changing geom_ and also what youre plotting (aes()). Say we wanted to plot age versus age at start of relationship - could use a scatter plot
+
+
+```{r}
+ggplot(data = gss, aes(x = age, y = age_start_relationship)) +
+  geom_point()
+```
+
+## Line plots 
+
+Use the country indicators dataset
+
+```{r}
+country_indicators <- read_csv("../data/country_indicators.csv")
+country_indicators
+```
+
+I'm going to plot life expectancy over time for Australia, Canada, and the USA. First i'm going to subset the data:
+
+Use the OR syntax |
+
+
+```{r}
+data_subset <- country_indicators %>% 
+  filter(country_code=="AUS"|country_code=="CAN"|country_code=="USA")
+data_subset
+```
+Plot life expectancy over time. Line plots make sense here! because we are plotting a continuous variable, against and continuous and chronological variable 
+
+```{r}
+ggplot(data = data_subset, aes(x = year, y = life_expectancy, color = country)) + 
+  geom_line() + 
+  geom_point()
+```
+
+
+
+
+

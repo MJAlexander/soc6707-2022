@@ -1,0 +1,39 @@
+---
+title: "Exploring Crime in Toronto"
+author: "Monica Alexander"
+date: "24/01/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE) # setting the global settings related to what is visible in the pdf
+```
+
+# Introduction
+
+# Data 
+
+These data came from open data toronto.....
+
+```{r}
+library(tidyverse)
+crime <- read_csv("neighbourhood-crime-rates.csv")
+```
+
+```{r}
+dbe <- crime %>% 
+  select(Neighbourhood, Hood_ID, BreakAndEnter_Rate2014:BreakAndEnter_Rate2020)
+
+```
+
+The mean and standard deviation rate of break and entering in 2019 is shown in the table below. 
+
+```{r}
+dbe %>% 
+  summarize(mean_be = mean(BreakAndEnter_Rate2019),
+            sd_be = sd(BreakAndEnter_Rate2019))
+```
+
+
+
+
