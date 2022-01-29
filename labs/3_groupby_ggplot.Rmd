@@ -17,7 +17,7 @@ What we're going to go through
 
 ```{r}
 library(tidyverse)
-gss <- read_csv("data/gss.csv")
+gss <- read_csv("../data/gss.csv")
 colnames(gss)
 ```
 
@@ -58,6 +58,14 @@ gss %>%
             n_total = n(),# total number of rows 
             prop = n_non_miss/n_total) 
 ```
+## Subset the data to only include those with non-missing values of age of relationship
+
+```{r}
+gss_subset <- gss %>% 
+  filter(!is.na(age_start_relationship))
+```
+
+
 
 # plot histogram of age of start of relationship by sex  
 
