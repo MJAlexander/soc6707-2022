@@ -1,0 +1,41 @@
+---
+title: "Week 4"
+author: "Monica Alexander"
+date: "31/01/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Reading in data
+
+- Stata files: `haven` package
+- Excel: `readxl`
+- Text files 
+
+```{r}
+#install.packages("haven")
+#install.packages("readxl")
+
+library(tidyverse) 
+library(haven) # for dealing with Stata files
+library(readxl) # for dealing with excel spreadsheets
+```
+
+Stata files, once you have the haven package loaded in, it's just read_dta
+
+```{r}
+d <- read_dta("~/Downloads/ipumsi_00027.dta")
+```
+
+Excel spreadsheet
+
+```{r}
+d <- read_xlsx("../data/WPP2019_FERT_F04_TOTAL_FERTILITY.xlsx", skip = 16, sheet = 1)
+d2 <- read_xlsx("../data/WPP2019_FERT_F04_TOTAL_FERTILITY.xlsx", skip = 16, sheet = 2)
+```
+
+Read dat with read_table
+
