@@ -254,6 +254,16 @@ gss %>%
 
 3. Within non-missing individuals who have worked last week, how many and what proportion worked full-time (full_part_time_work)?
 
+```{r}
+# for those with non-missing worked last week, counting and getting proportions by full_part_time_work
+gss %>% 
+  drop_na(worked_last_week) %>% 
+  group_by(full_part_time_work) %>% 
+  tally() %>% 
+  mutate(prop = n/sum(n))
+```
+
+
 # `ggplot`
 
 `ggplot` is a powerful visualization package. It provides many options to make beautiful graphs, maps, plots of all sort. Each example we look at today. 
@@ -265,8 +275,10 @@ Note for histograms, bar chats, box plots, `fill` is the main color choice (`col
 ```{r}
 ggplot(data = gss, aes(age_at_first_marriage)) + 
   geom_histogram(fill = "lightblue", color = "navy") +
-  ggtitle("Age at first marriage, GSS") + 
-  xlab("age at first marriage (years)")
+  #ggtitle("Age at first marriage, GSS") + 
+  #xlab("age at first marriage (years)")
+  labs(x = "age at first marriage (years)", 
+       title = "Age at first marriage, GSS")
 ```
 Note that you can also save the plot as an object and then print it
 
@@ -276,20 +288,22 @@ my_plot <- ggplot(data = gss, aes(age_at_first_marriage)) +
   ggtitle("Age at first marriage, GSS") + 
   xlab("age at first marriage (years)")
 
+my_plot
+
 # print
-my_plot + ylab("Number of observations")
+my_plot + ylab("Number of observations") + theme_light()
 ```
 
 Histograms select a `binwidth` or section of the data and then count how many of the observations fall within that. Histograms look different depending on the size of the bins. You can also supply the number of bins that you want to create. 
 
 ```{r}
 ggplot(data = gss, aes(age_at_first_marriage)) + 
-  geom_histogram(fill = "lightblue", color = "navy", binwidth = 1) +
+  geom_histogram(fill = "lightblue", color = "navy", binwidth = 1) + # bin width of 1 year
   ggtitle("Age at first marriage, GSS") + 
   xlab("age at first marriage (years)")
 
 ggplot(data = gss, aes(age_at_first_marriage)) + 
-  geom_histogram(fill = "lightblue", color = "navy", bins = 10)+
+  geom_histogram(fill = "lightblue", color = "navy", bins = 10)+ # plot a total of 10 bins/rectangles
   ggtitle("Age at first marriage, GSS") + 
   xlab("age at first marriage (years)")
 ```
@@ -297,6 +311,7 @@ ggplot(data = gss, aes(age_at_first_marriage)) +
 We can also plot by another variable to compare the plots by the categories of the variable. For example, we look at plots by sex:
 
 ```{r}
+# add another variable, and vary the rectangle color (fill) by the respondent's sex
 ggplot(data = gss, aes(age_at_first_marriage, fill = sex)) + 
   geom_histogram(position = 'dodge') +
   ggtitle("Age at first marriage, GSS") + 
@@ -308,10 +323,11 @@ ggplot(data = gss, aes(age_at_first_marriage, fill = sex)) +
 Let's plot the proportion of respondents by province as a bar chart. First save the proportions as a new data frame
 
 ```{r}
+# calculate our summary measure
 resp_by_prov <- gss %>% 
   group_by(province) %>% 
-  tally() %>% 
-  mutate(prop = n / sum(n))
+  tally() %>% # counting the number of people by province
+  mutate(prop = n / sum(n)) # getting the proportion
 
 resp_by_prov
 ```
@@ -320,7 +336,7 @@ Now plot
 
 ```{r}
 ggplot(data = resp_by_prov, aes(x = province, y = prop)) + 
-  geom_bar(stat = "identity") + 
+  geom_bar(stat = "identity") + # plot what's in the dataframe 
   ylab("proportion")+
   ggtitle("Proportion of GSS respondents by province")
 ```
@@ -329,7 +345,7 @@ There are a few things here that would be nice to fix. Firstly, the categories a
 
 ```{r}
 resp_by_prov <- resp_by_prov %>% 
-  mutate(province = fct_reorder(province, prop)) # order by proportion 
+  mutate(province = fct_reorder(province, prop)) # reorder the province factor/category by proportion 
 ```
 
 Now try plotting again.
@@ -348,7 +364,7 @@ ggplot(data = resp_by_prov, aes(x = province, y = prop)) +
   geom_bar(stat = "identity") + 
   ylab("proportion")+
   ggtitle("Proportion of GSS respondents by province") + 
-  coord_flip()
+  coord_flip() # flips to make horizontal 
 ```
 
 ## Box plots
@@ -356,6 +372,9 @@ ggplot(data = resp_by_prov, aes(x = province, y = prop)) +
 Let's use the country indicators dataset here and do boxplots of child mortality in 2017 over regions. Like the bar chart example, best to reorder the regions by the variable we are interested in
 
 ```{r}
+# getting my dataset that i want to plot
+# only looking at 2017
+# ordering region of world by the value of child mortality 
 country_ind_2017 <- country_ind %>% 
   filter(year==2017) %>% 
   mutate(region = fct_reorder(region, -child_mort)) # descending order
@@ -365,6 +384,15 @@ ggplot(data = country_ind_2017, aes(x = region, y = child_mort)) +
   ylab("under-five child mortality (deaths per 1000 live births)") + 
   ggtitle("Distribution of child mortality by region, 2017")
 ```
+```{r}
+ggplot(data = country_ind_2017, aes(x = region, y = child_mort)) + 
+  geom_boxplot() +
+  ylab("under-five child mortality (deaths per 1000 live births)") + 
+  ggtitle("Distribution of child mortality by region, 2017") + 
+  coord_flip()
+```
+
+
 
 The labels on the x axis are hard to read. We could do the same as last time (switch to horizontal), or we can change the alignment of the labels:
 
@@ -373,7 +401,7 @@ ggplot(data = country_ind_2017, aes(x = region, y = child_mort)) +
   geom_boxplot() +
   ylab("under-five child mortality") + 
   ggtitle("Distribution of child mortality by region, 2017") + 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # rotate the x axis labels
 ```
 
 Note if you want to color the boxes, use `fill`, and then remove the legend (not needed)
@@ -392,11 +420,12 @@ ggplot(data = country_ind_2017, aes(x = region, y = child_mort, fill = region)) 
 Let's look at the mean age at marriage by age of respondent. Firstly, let's make a new variable in the `gss` dataset that groups people into 5-year age groups. Here's the code to do this:
 
 ```{r}
-age_groups <- seq(15, 80, by = 5)
-gss$age_group <- as.numeric(as.character(cut(gss$age, 
-                   breaks= c(age_groups, Inf), 
-                   labels = age_groups, 
-                   right = FALSE)))
+# ALREADY IN DATASET
+# age_groups <- seq(15, 80, by = 5)
+# gss$age_group <- as.numeric(as.character(cut(gss$age, 
+#                    breaks= c(age_groups, Inf), 
+#                    labels = age_groups, 
+#                    right = FALSE)))
 
 gss %>% select(age, age_group)
 ```
@@ -405,9 +434,9 @@ Now let's calculate the average of the 'life satisfaction' variable by age group
 
 ```{r}
 life_satis_age_sex <- gss %>% 
-  group_by(age_group, sex) %>% 
+  group_by(age_group, sex) %>% # grouping by two variables 
   summarise(mean_life_satis = mean(feelings_life, na.rm = TRUE))  
-
+life_satis_age_sex
 ```
 
 Plot as a line chart over age, coloring by sex, for this example we use a different colour palette called "Set1":
@@ -416,7 +445,7 @@ Plot as a line chart over age, coloring by sex, for this example we use a differ
 ggplot(data = life_satis_age_sex, aes(x = age_group, y = mean_life_satis, colour = sex)) + 
   geom_point() + 
   geom_line() +
-  scale_color_brewer(palette = "Set1") + # change the color scheme
+  scale_color_brewer(palette = "Set2") + # change the color scheme
   ylab("average life satisfication") + 
   xlab("age group") + 
   ggtitle("Average life satisfaction by age and sex")
@@ -440,7 +469,7 @@ Instead of dots could have country codes (although becomes hard to read, but eas
 
 ```{r}
   ggplot(country_ind_2017, aes(tfr, life_expectancy, color = region, label = country_code)) + # adding in label info
-  geom_text() + 
+  geom_text() + # plotting the country code labels 
   ggtitle("TFR versus life expectancy, 2017")+
   theme_bw(base_size = 14)+ 
   ylab("life expectancy (years)") + 
@@ -478,7 +507,41 @@ ggplot(data = gss_subset, aes(age_at_first_marriage, fill = sex)) +
 
 # Review Questions
 1. Using the country_indicator dataset, create a scatter plot of GDP over life expectancy by region for the year 2014. Edit the labels, set a title, and make sure the graph is color-coded. 
+
+```{r}
+# make my dataset
+country_ind_2014 <- country_ind %>% filter(year==2014)
+
+ggplot(data = country_ind_2014, aes(x = gdp, y = life_expectancy, color = region)) + 
+  geom_point() +
+  labs(x = "GDP", y = "life expectancy (years)", title = "life expectancy v GDP, 2014")
+
+```
+
+
 2. Using the GSS dataset, create a bar graph of non-missing values for the province of birth (`place_birth_province) and then arrange the proportions from high to low. Make sure to color code and make all labels are readable. 
+
+```{r}
+# create a dataset to plot
+
+prop_pb <- gss %>% 
+  drop_na(place_birth_province) %>% # removing missing values
+  group_by(place_birth_province) %>% 
+  tally() %>% # count of respondents by province of birth
+  mutate(prop = n/sum(n)) %>% # calculating proportion
+  mutate(place_birth_province = fct_reorder(place_birth_province, prop)) # reordering
+
+ggplot(data = prop_pb, aes(x = place_birth_province, y = prop, fill = place_birth_province)) + 
+  geom_bar(stat = "identity") + 
+  coord_flip() + 
+  labs(y = "proportion of respondents born in province", 
+       x = "province of birth",
+       title = "GSS respondents by place of birth") + 
+  theme_bw()+
+  scale_fill_viridis_d() + 
+  theme(legend.position = "none") 
+```
+
 
 
 
