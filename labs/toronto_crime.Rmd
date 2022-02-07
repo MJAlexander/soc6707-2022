@@ -17,7 +17,7 @@ These data came from open data toronto.....
 
 ```{r}
 library(tidyverse)
-crime <- read_csv("neighbourhood-crime-rates.csv")
+crime <- read_csv("../data/neighbourhood-crime-rates.csv")
 ```
 
 ```{r}
