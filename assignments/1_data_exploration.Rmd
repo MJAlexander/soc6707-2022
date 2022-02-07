@@ -230,6 +230,7 @@ pnorm(3500, mean = mean_bw, sd = sd_bw) - pnorm(3400, mean = mean_bw, sd = sd_bw
 
 0.13*sd_bw+ mean_bw
 
+# how I got the last question
 set.seed(098)
 bws <- round(rnorm(15, mean = 4000, sd =200))
 
@@ -237,6 +238,28 @@ bws <- round(rnorm(15, mean = 4000, sd =200))
 
 ```{r, eval = TRUE, echo = FALSE, include = TRUE}
 tibble(birthweight = bws) %>% kableExtra::kable(booktabs = TRUE)
+```
+
+
+```{r}
+# mean and SD are pretty different
+as_tibble(bws) %>% 
+  summarise(mean(value), sd(value))
+
+# hard to see with histogram but seems like it's centered at something higher
+ggplot(as_tibble(bws), aes(value)) + geom_histogram(bins = 6)
+
+# these are pretty different from 0 and 1
+z_scores <- (bws - mean_bw)/sd_bw
+mean(z_scores)
+sd(z_scores)
+
+# probability of seeing something as extreme as the mean based on the original distribution is 20%
+(1-pnorm((mean(bws) - mean_bw)/sd_bw))*2
+
+# there's no one right answer here, they should conclude they are probably unlikely to come from the same distribution
+# and do a few calculations
+
 ```
 
 
