@@ -1,0 +1,71 @@
+---
+title: 'Week 6: Linear regression II'
+author: "Monica Alexander"
+date: "13/02/2021"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+What are we going to do:
+
+- Extract $R^2$ from lm object
+- How to extract fitted values and residuals from `lm` object
+- Calculate $R^2$ ourselves
+- Plot residuals versus TFR values
+- Calculate correlation between residuals and TFR
+- Do log transforms and regressions with those
+
+```{r}
+library(tidyverse)
+library(here)
+country_ind <- read_csv(here("data/country_indicators.csv"))
+
+```
+
+
+## Filter to just be 2017
+
+```{r}
+country_ind_2017 <- country_ind %>% filter(year==2017)
+```
+
+## Look at the observed relationship between TFR and child mortality
+
+```{r}
+ggplot(country_ind_2017, aes(tfr, child_mort)) + 
+  geom_point()+
+    labs(title = "Child mortality versus TFR, 2017", 
+       x = "total fertility rate (births per woman)",
+       y = "child mortality rate (deaths per 1000 births)")
+```
+
+## Fit SLR
+
+```{r}
+childmort_tfr_model <- lm(formula = child_mort~tfr, data = country_ind_2017)
+childmort_tfr_model
+```
+
+## Extract $R^2$
+
+## Extract fitted values and residuals
+
+## Calculate $R^2$ by hand
+
+- Calculate Ybar (i.e. the mean of child mortality)
+- Hence calculate SSM
+- Calculate SSR
+- Hence calculate SST and $R^2$
+
+## Plot reisduals versus TFR
+
+## Calculate correlation
+
+## Take log transforms
+
+## Repeat regression and residual analysis
+
