@@ -21,6 +21,8 @@ country_ind_2017 <- country_ind %>% filter(year==2017)
 
 ## Announcements
 
+- Assignment 2 and EDA released
+
 ## Overview
 
 - Explained v unexplained variation
@@ -356,11 +358,11 @@ that the null hypothesis is true
 
 5. Make a decision (reject the null if the p-value is less than $\alpha$, and fail to reject otherwise)
 
-## Logic of the t-test
+<!-- ## Logic of the t-test -->
 
-- Under the 5 assumptions discussed earlier, if the null hypothesis that $\beta_1 = b$ were in fact true, then $T_{\widehat{\beta}_{1}}=\frac{\widehat{\beta}_{1}-b}{s e\left(\widehat{\beta}_{1}\right)}$ would be t-distributed with $n-2$ df. 
-- We can use this result to make probabilistic statements about the chances of observing different values of $T_{\widehat{\beta}_{1}}$ in any given sample
-- If the probability of observing a test statistic as or even more extreme than the value we actually observe in our sample is very small, then we conclude that the null hypothesis is not likely true
+<!-- - Under the 5 assumptions discussed earlier, if the null hypothesis that $\beta_1 = b$ were in fact true, then $T_{\widehat{\beta}_{1}}=\frac{\widehat{\beta}_{1}-b}{s e\left(\widehat{\beta}_{1}\right)}$ would be t-distributed with $n-2$ df.  -->
+<!-- - We can use this result to make probabilistic statements about the chances of observing different values of $T_{\widehat{\beta}_{1}}$ in any given sample -->
+<!-- - If the probability of observing a test statistic as or even more extreme than the value we actually observe in our sample is very small, then we conclude that the null hypothesis is not likely true -->
 
 ## The t-test in R
 
