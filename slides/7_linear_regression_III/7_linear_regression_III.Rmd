@@ -1,0 +1,409 @@
+---
+title: "SOC6707 Intermediate Data Analysis"
+author: "Monica Alexander"
+date: "Week 7: Interactions, and thinking about problems"
+output: 
+  beamer_presentation:
+    slide_level: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, size = '\tiny')
+```
+
+```{r}
+library(tidyverse)
+library(here)
+country_ind <- read_csv(here("data/country_indicators.csv"))
+
+# from lab
+gss <- read_csv(here("data/gss.csv"))
+gss <- gss %>% 
+  mutate(low_income = ifelse(income_respondent=="Less than $25,000", 1, 0))
+age_groups <- seq(10, 80, by = 10)
+
+gss$age_group <- as.character(cut(gss$age, 
+                   breaks= c(age_groups, Inf), 
+                   labels = age_groups, 
+                   right = FALSE))
+gss <- gss %>% 
+  mutate(age_group = fct_relevel(age_group, "30", after = 0))
+gss <- gss %>% 
+  mutate(educ_cat = fct_relevel(educ_cat, "high school", after=0))
+
+mod_5 <- glm(low_income~age_group+educ_cat, data = gss, family = "binomial")
+```
+
+
+
+## Announcements
+
+- Mode of delivery
+- Content
+- Presentations?
+- A2
+- Recording plan for EDA related stuff
+
+Today: seminar at 12pm 
+ 
+Harvey J. Nicholson: 'Considering within-group heterogeneity to explore Black Americans’ feelings toward Asian Americans: the case of African Americans and Black Caribbeans'
+
+
+# Interaction terms
+
+## Effect moderation
+
+-  Effect moderation refers to the situation where the partial effect of one explanatory variable differs or changes across levels of another explanatory variable
+    + e.g. the association between income and age may vary by education level
+- All of the models we have considered thus far constrain the partial effects of the explanatory variables to be invariant, but this may not be appropriate
+- If a model constrains partial effects to be invariant when in fact they are not, our estimates will be wrong
+
+We can accommodate effect moderation through the use of **interaction terms**
+
+## Interaction terms
+
+Example of an MLR model with an interaction term:
+
+$$
+\begin{aligned}
+Y_{i} &=E\left(Y_{i} \mid X_{i 1}, X_{i 2}\right)+\varepsilon_{i} \\
+&=\beta_{0}+\beta_{1} X_{i 1}+\beta_{2} X_{i 2}+\beta_{3} X_{i 1} X_{i 2}
+\end{aligned}
+$$
+
+- How should we interpret the parameters in an MLR model with interaction terms?
+- First, let's look at an example
+
+## Example
+
+- What is the association between TFR, life expectancy and region?
+- Does the association between TFR and life expectancy differ based on whether country is in Developed Regions or not?
+
+## Example in R
+
+\tiny
+```{r, echo = TRUE}
+country_ind_2017 <- country_ind %>% 
+  filter(year==2017) %>% 
+  mutate(dev_region = ifelse(region=="Developed regions", "yes", "no"))
+
+summary(lm(tfr ~ life_expectancy + dev_region + life_expectancy*dev_region, data = country_ind_2017))
+```
+## Example
+
+$$
+Y_i = 13.5 - 0.14X_1 - 13.0 X_2 + 0.16X_1X_2
+$$
+
+Some interpretations
+
+- for non-developed regions, 1 year increase in life expectancy associated with 0.14 decrease in TFR
+- for developed regions, a 1 year increase in life expectancy associated with a 0.02 increase in TFR
+
+
+## Visualizing interactions 
+
+```{r}
+ggplot(aes(life_expectancy, tfr, color = dev_region), data = country_ind_2017) + 
+  geom_point() + geom_smooth(method = "lm") + 
+  ggtitle("TFR versus life expectancy, by region") + 
+  ylab("TFR") + xlab("Life expectancy") + 
+  scale_color_brewer(name = "Developed region", palette = "Set1")
+```
+
+
+
+## Interaction terms
+
+Now, let's take a look at how $E\left(Y_{i} \mid X_{i 1}, X_{i 2}\right)$ changes with a unit increase in $X_{i1}$ in the general case
+
+## Interaction terms
+$$
+E\left(Y_{i} \mid X_{i 1}, X_{i 2}\right)=\beta_{0}+\beta_{1} X_{i 1}+\beta_{2} X_{i 2}+\beta_{3} X_{i 1} X_{i 2}
+$$
+In this model, the change in the expected value of $Y_i$ associated with a unit increase in $X_{i1}$ is given by
+$$
+E\left(Y_{i} \mid X_{i 1}=x_{1}+1, X_{i 2}=x_{2}\right)-E\left(Y_{i} \mid X_{i 1}=x_{1}, X_{i 2}=x_{2}\right)=\beta_{1}+\beta_{3} x_{2}
+$$
+
+- The partial effect of $X_{i1}$ now depends on the value to which we set the other explanatory variable, $X_{i2}$
+- Note that when $X_{i2}=0$, this expression simplifies to $\beta_1$, or in other words, $\beta_1$ is the change in the expected value of $Y_i$ associated with a unit increase in $X_{i1}$ specifically when $X_{i2}=0$
+
+
+## Interaction terms
+
+Next, let’s take a look at how the partial effect of $X_{i 1}, \beta_{1}+\beta_{3} x_{2}$, changes with a unit increase in $X_{i2}$ 
+
+The change in the partial effect of $X_{i 1}$ associated with a unit increase in $X_{i2}$ is given by
+$$
+\begin{array}{l}
+{\left[E\left(Y_{i} \mid X_{i 1}=x_{1}+1, X_{i 2}=x_{2}+1\right)-E\left(Y_{i} \mid X_{i 1}=x_{1}, X_{i 2}=x_{2}+1\right)\right]} \\
+-\left[E\left(Y_{i} \mid X_{i 1}=x_{1}+1, X_{i 2}=x_{2}\right)-E\left(Y_{i} \mid X_{i 1}=x_{1}, X_{i 2}=x_{2}\right)\right]=\beta_{3}
+\end{array}
+$$
+In words, $\beta_3$ represents the amount by which the partial effect of $X_{i 1}$ differs across levels of the other explanatory variable, $X_{i2}$ 
+
+## Interaction terms
+
+- The previous slides may take a little getting used to 
+- In reality, one of our explanatory variables (say $X_{i2}$) is a binary variable (so either 0 or 1)
+- This simplifies the interpretation of the interaction term 
+
+
+
+## Another example
+
+
+
+\tiny
+```{r, echo = TRUE}
+gss <- gss %>% mutate(age_c = age - mean(age))
+mod <- lm(age_at_first_marriage~ age_c + has_bachelor_or_higher, data = gss)
+summary(mod)
+```
+
+## With interaction
+
+\tiny
+```{r, echo = TRUE}
+mod2 <- lm(age_at_first_marriage~ age_c*has_bachelor_or_higher, data = gss)
+summary(mod2)
+```
+
+## Visualizing
+
+
+```{r}
+ggplot(gss %>% drop_na(has_bachelor_or_higher) %>% filter(age<70), aes(x = age, y = age_at_first_marriage, color = has_bachelor_or_higher)) + 
+  geom_point(alpha = 0.4)+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  scale_color_brewer(palette = "Set1")+
+  labs(y = "age at first marriage")
+  
+```
+
+
+## Interpretation
+
+\tiny
+```{r}
+summary(mod2)
+```
+
+
+# Problems
+
+## Example
+
+Pretend we are interested in studying the association between education and income. We have a dataset with income (weekly $), age (years) and years of schooling. Note that some incomes are missing.
+
+
+\footnotesize
+```{r}
+incomes <- rnorm(1000, mean = log(1000), sd = log(5))
+ages <- 20:70
+
+eps <- rnorm(length(ages)*100, sd = 1)
+
+df <- tibble(age = rep(ages, each = 100),
+       truth = log(3000) + 0.01*(age-45)-0.002*(age-45)^2,
+       eps = eps,
+       income = truth + eps,
+       yrs = sample(5:15, length(ages)*100, replace = TRUE),
+       sample = income-mean(income) + yrs-10+rnorm(length(ages)*100)>0)
+
+d <- df %>% 
+  mutate(income = ifelse(sample, exp(income), NA)) %>% 
+  select(age, yrs, income)
+
+d
+
+# df %>% 
+#   filter(sample) %>% 
+#   ggplot(aes(age, obs, color = sample)) + 
+#   geom_point()
+# 
+# 
+# df %>% 
+#   ggplot(aes(yrs, obs)) + 
+#   geom_point()+ geom_smooth(method = "lm")
+# 
+# df %>% 
+#   filter(sample) %>% 
+#   ggplot(aes(yrs, obs, color = sample, group = sample)) + 
+#   geom_point()+ geom_smooth(method = "lm")
+```
+
+## Summaries
+
+\footnotesize
+```{r}
+d %>% 
+  group_by(yrs) %>% 
+  summarize(mean_log_income = mean(log(income), na.rm = TRUE),
+            n = n(),
+            n_income_missing = sum(is.na(income)))
+```
+
+
+## Age versus log income
+
+```{r}
+d %>% 
+  ggplot(aes(age, log(income))) + geom_point()
+```
+
+## Education versus log(income)
+
+```{r}
+d %>% 
+  ggplot(aes(yrs, log(income))) + geom_point()
+```
+
+
+# Problem: mis-specification
+
+## Regression
+
+Note missing values get dropped from regression
+
+\tiny
+```{r, echo = TRUE}
+d <- d %>% mutate(log_income = log(income))
+mod <- lm(data = d, log_income ~ age+yrs)
+summary(mod)
+```
+## Residuals
+
+\tiny
+```{r, echo = TRUE}
+df_resid <- tibble(resid = residuals(mod), 
+                   age = d %>% 
+                     drop_na() %>% 
+                     select(age) %>% 
+                     pull())
+ggplot(data = df_resid, aes(age, resid)) + geom_point()
+```
+
+## Residuals
+
+\tiny
+```{r, echo = TRUE}
+ggplot(data = df_resid, aes(age, resid)) + geom_point()+ geom_smooth()
+```
+
+
+## Rerun model
+
+\tiny
+```{r, echo = TRUE}
+d <- d %>% mutate(age_sq = age^2)
+mod2 <- lm(data = d, log_income ~ age+age_sq + yrs)
+summary(mod2)
+```
+## Bonus! you just learnt polynomial regression
+
+How to interpret? Easiest to plot the relationship, and pick a few ages to calculate the effect. 
+
+\tiny
+
+
+```{r}
+d %>% 
+  ggplot(aes(age, log_income)) + 
+  geom_point() + geom_smooth(method = "lm", formula = y ~ poly(x,2)) + 
+  ylab("income") + xlab("age") + ggtitle("Income versus age with quadratic fit")
+```
+
+## Interpretation
+
+Effect of age when age equals:
+
+- 25:
+- 45:
+- 65:
+
+## Residuals
+
+\tiny
+```{r, echo = TRUE, fig.height = 5}
+df_resid <- tibble(resid = residuals(mod2), 
+                   age = d %>% 
+                     drop_na() %>% 
+                     select(age) %>% 
+                     pull())
+ggplot(data = df_resid, aes(age, resid)) + geom_point()
+```
+
+# Problem: missing data and collider bias
+
+## Missing data
+
+- We have quite a lot of missing observations of income in this dataset
+- We can still run regressions in R, `lm` doesn't mind at all
+- Just drops the missing rows
+
+\tiny
+```{r}
+summary(mod)
+```
+## Missing data
+
+- If we use our model to make inferences about the relationship between education and income for the whole population, what are we assuming?
+
+
+## Missing at random
+
+- Assuming the people we have are representative of the broader population
+- The relationship between education and income we see is true for those missing also
+- There's no systematic reason for people being missing
+
+## But we know this isn't true
+
+- The people with observed values of income are more likely to have more years of schooling
+- It's very conceivable that the relationship between education and income may be different for those with missing observations
+
+## Collider bias
+
+- Colliders (e.g. non-response bias)
+- Schooling and income both influence survey response 
+- Conditioning on survey response creates a non-causal
+association between schooling and income
+- In our example, higher income and education both increase the chance of response, then conditioning on responding to the survey (i.e. only looking at non-missing values) if someone has a relatively high education then it's more likely they have a lower income. This creates a non-causal negative association between education and income
+
+## What can you do about missing data
+
+Broadly, there are two strategies:
+
+1. Remove
+2. Impute
+
+## Removal of missing data
+
+- This is essentially what we've been doing! All rows with any missing values for variables that go into the regression are removed
+- This is okay, as long as you know what's being removed
+- May be useful to remove variables that have a lot of unexplained missingness from your analysis
+
+## Imputation
+
+We won't cover in this class, but broadly 
+
+- Make a decision to impute some reasonable values for some/all missing data
+- e.g. mean, median, mode, group means, modeled based predictions
+- more complex strategies: multiple imputation
+
+Monica is not a fan because it's hard to propagate and quantify uncertainty (and we all about quantifying uncertainty, why else are we running regressions)
+
+## Embrace the missingness
+
+- Try to understand what's missing and how it might affect your conclusions
+- If appropriate, you may be able to redefine your research question
+- Reconsider using variables that have a lot of missingness
+
+
+
+
+
+
+

@@ -1,0 +1,196 @@
+---
+title: 'Week 7: Linear regression III'
+author: "Monica Alexander"
+date: "28/02/2021"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+This markdown file contains all the code used in the lecture.
+
+# Interactions
+
+Read in data: 
+
+```{r}
+library(tidyverse)
+library(here)
+country_ind <- read_csv(here("data/country_indicators.csv"))
+gss <- read_csv(here("data/gss.csv"))
+```
+
+
+## TFR and life expectancy
+
+Filter data and create an indicator variable based on country region:
+
+```{r}
+country_ind_2017 <- country_ind %>% 
+  filter(year==2017) %>% 
+  mutate(dev_region = ifelse(region=="Developed regions", "yes", "no"))
+```
+
+Regression:
+
+```{r}
+mod <- lm(tfr ~ life_expectancy + dev_region + life_expectancy*dev_region, data = country_ind_2017)
+summary(mod)
+```
+
+Plot:
+
+```{r}
+ggplot(aes(life_expectancy, tfr, color = dev_region), data = country_ind_2017) + 
+  geom_point() + geom_smooth(method = "lm") + 
+  ggtitle("TFR versus life expectancy, by region") + 
+  ylab("TFR") + xlab("Life expectancy") + 
+  scale_color_brewer(name = "Developed region", palette = "Set1")
+```
+
+
+## Age at first marriage and age
+
+Create a new age variable that is mean centered:
+```{r}
+gss <- gss %>% mutate(age_c = age - mean(age))
+```
+
+Regression without interaction:
+
+```{r}
+mod2 <- lm(age_at_first_marriage~ age_c + has_bachelor_or_higher, data = gss)
+summary(mod2)
+```
+
+Regression with interaction:
+
+```{r}
+mod3 <- lm(age_at_first_marriage~ age_c*has_bachelor_or_higher, data = gss)
+summary(mod3)
+```
+
+Plot: 
+
+```{r}
+ggplot(gss %>% drop_na(has_bachelor_or_higher) %>% filter(age<70), aes(x = age, y = age_at_first_marriage, color = has_bachelor_or_higher)) + 
+  geom_point(alpha = 0.4)+
+  geom_smooth(method = "lm")+
+  theme_bw()+
+  scale_color_brewer(palette = "Set1")+
+  labs(y = "age at first marriage")
+  
+```
+
+# Problems
+
+For this section, I actually simulated some data. Here's the code to do this. You don't need to understand it, but if you're interested, let me know and I can go through it next week. 
+
+```{r}
+ages <- 20:70
+
+eps <- rnorm(length(ages)*100, sd = 1)
+
+df <- tibble(age = rep(ages, each = 100),
+       truth = log(3000) + 0.01*(age-45)-0.002*(age-45)^2,
+       eps = eps,
+       income = truth + eps,
+       yrs = sample(5:15, length(ages)*100, replace = TRUE),
+       sample = income-mean(income) + yrs-10+rnorm(length(ages)*100)>0)
+
+# final dataset just showing those surveyed
+d <- df %>% 
+  mutate(income = ifelse(sample, exp(income), NA)) %>% 
+  select(age, yrs, income)
+
+d
+```
+
+## EDA
+
+Summary stats:
+
+```{r}
+d %>% 
+  group_by(yrs) %>% 
+  summarize(mean_log_income = mean(log(income), na.rm = TRUE),
+            n = n(),
+            n_income_missing = sum(is.na(income)))
+```
+
+Age versus log income
+
+```{r}
+d %>% 
+  ggplot(aes(age, log(income))) + geom_point()
+```
+
+Education versus log(income)
+
+```{r}
+d %>% 
+  ggplot(aes(yrs, log(income))) + geom_point()
+```
+
+## Mis-specification
+
+Run model with no squared term
+
+```{r}
+d <- d %>% mutate(log_income = log(income))
+mod <- lm(data = d, log_income ~ age+yrs)
+summary(mod)
+```
+
+Get residuals and plot
+
+```{r}
+df_resid <- tibble(resid = residuals(mod), 
+                   age = d %>% 
+                     drop_na() %>% 
+                     select(age) %>% 
+                     pull())
+ggplot(data = df_resid, aes(age, resid)) + geom_point()
+```
+
+Fit a line
+
+```{r}
+ggplot(data = df_resid, aes(age, resid)) + geom_point()+ geom_smooth()
+```
+
+Rerun model with squared term
+
+```{r}
+d <- d %>% mutate(age_sq = age^2)
+mod2 <- lm(data = d, log_income ~ age+age_sq + yrs)
+summary(mod2)
+```
+
+Visualize fit
+
+```{r}
+d %>% 
+  ggplot(aes(age, log_income)) + 
+  geom_point() + geom_smooth(method = "lm", formula = y ~ poly(x,2)) + 
+  ylab("income") + xlab("age") + ggtitle("Income versus age with quadratic fit")
+```
+
+Redo residuals: much better
+
+```{r}
+df_resid <- tibble(resid = residuals(mod2), 
+                   age = d %>% 
+                     drop_na() %>% 
+                     select(age) %>% 
+                     pull())
+ggplot(data = df_resid, aes(age, resid)) + geom_point()
+```
+
+## Non-response bias
+
+No code here but notice that the dataset we used (`d`) was a filtered version of the full sample (`df`). If you rerun the regressions on `df` you should notice no significant association between income and years schooling. 
+
