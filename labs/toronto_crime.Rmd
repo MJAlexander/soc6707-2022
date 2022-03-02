@@ -6,33 +6,91 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE) # setting the global settings related to what is visible in the pdf
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE) # setting the global settings related to what is visible in the pdf
 ```
 
 # Introduction
 
+I'm interested in how BE rates vary by income, and controlling for pop density, seniors and HH size. 
+
 # Data 
 
-These data came from open data toronto.....
+These data came from open data toronto..... there's stuff on crime and census
 
 ```{r}
 library(tidyverse)
-crime <- read_csv("../data/neighbourhood-crime-rates.csv")
+library(here)
+library(kableExtra)
+
+
+crime <- read_csv(here("data/neighbourhood-crime-rates.csv"))
+profiles <- read_csv(here("data/neighbourhood-profiles-2016-csv.csv"))
+
+# outcome of interest: break and enter rate in 2020
+crime <- crime %>% 
+  select(Neighbourhood, BreakAndEnter_Rate2020)
+
+# pull out variables of interest
+profiles <- profiles %>% 
+  filter(Characteristic %in% c("Population density per square kilometre",
+                               "Population, 2016", 
+                               "Seniors (65+ years)",
+                               "Total income: Average amount ($)",
+                               "Average household size")) %>% 
+  select(-(`_id`:`Data Source`))
+
+# munge the two datasets together
+profile_long <- profiles %>% 
+  pivot_longer(-Characteristic, names_to = "Neighbourhood", values_to = "value")
+
+d <- crime %>% 
+  left_join(profile_long) %>% 
+  pivot_wider(names_from = "Characteristic", values_from = "value")
+
+# cleaning
+d <- d %>% 
+  select(-`NA`) %>% 
+  mutate(pop = as.numeric(str_remove(`Population, 2016`, ",")),
+         pop_density = as.numeric(str_remove(`Population density per square kilometre`, ",")),
+         seniors = as.numeric(str_remove(`Seniors (65+ years)`, ",")),
+         income = as.numeric(str_remove(`Total income: Average amount ($)`, ",")),
+         hh_size = as.numeric(`Average household size`)) %>% 
+  select(-(`Population, 2016`:`Total income: Average amount ($)`))
+
+
 ```
+
+# Descriptive analysis
+
+Looking at mean and sd of my variables
 
 ```{r}
-dbe <- crime %>% 
-  select(Neighbourhood, Hood_ID, BreakAndEnter_Rate2014:BreakAndEnter_Rate2020)
+d <- d %>% mutate(prop_senior = seniors/pop)
+
+means <- d %>% 
+  summarize(across(c("BreakAndEnter_Rate2020","pop_density", "income", "hh_size", "prop_senior"), mean, na.rm = TRUE)) %>% 
+  pivot_longer(everything(.), values_to = "mean")
+
+sds <- d %>% 
+  summarize(across(c("BreakAndEnter_Rate2020","pop_density", "income", "hh_size", "prop_senior"), sd, na.rm = TRUE))%>% 
+  pivot_longer(everything(.), values_to = "sd")
+
+means %>% 
+  left_join(sds) %>% 
+  mutate(mean = round(mean, 2), sd = round(sd, 2)) %>% 
+  kable(col.names = c("Variable", "Mean", "Standard Deviation"), booktabs = TRUE, caption = "summary stats")
 
 ```
 
-The mean and standard deviation rate of break and entering in 2019 is shown in the table below. 
 
-```{r}
-dbe %>% 
-  summarize(mean_be = mean(BreakAndEnter_Rate2019),
-            sd_be = sd(BreakAndEnter_Rate2019))
+Figure 1 is a scatter plot of log of break and enter rate versus hh size., This shows.....
+
+```{r, fig.height = 4, fig.cap="my fig"}
+ggplot(data = d, aes(x = hh_size, y = log(BreakAndEnter_Rate2020))) +
+  geom_point() +
+  labs(title = "Break and enter rate versus household size")
 ```
+
 
 
 
