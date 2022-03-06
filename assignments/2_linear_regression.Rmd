@@ -186,9 +186,9 @@ Interpret both graphs descriptively.
 
 ```{r}
 d %>% 
-  ggplot(aes(log_income, fill = surveyed)) + geom_histogram()
+  ggplot(aes(log_income, fill = surveyed)) + geom_histogram(position = "dodge")
 d %>% 
-  ggplot(aes(log_payments, fill = surveyed)) + geom_histogram()
+  ggplot(aes(log_payments, fill = surveyed)) + geom_histogram(position = "dodge")
 ```
 ## e)
 
