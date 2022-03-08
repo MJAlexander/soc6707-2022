@@ -1,0 +1,68 @@
+---
+title: "Example with categorical outcome"
+author: "Monica Alexander"
+date: "08/03/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Look at proportion of respondents in each income group by education in the GSS
+
+```{r}
+library(tidyverse)
+library(here)
+gss <- read_csv(here("data/gss.csv"))
+```
+
+Unique levels on income:
+```{r}
+unique(gss$income_respondent)
+```
+
+
+First, let's reorder income and education to be a sensible (ordinal) order
+
+```{r}
+income_levels <- c("Less than $25,000", "$25,000 to $49,999"  ,
+                   "$50,000 to $74,999",  "$75,000 to $99,999"   ,
+                   "$100,000 to $ 124,999", "$125,000 and more")
+
+educ_levels <- c("less than high school",
+                 "high school",
+                 "trade or other certificate",
+                 "some university",
+                 "bachelor",
+                 "postgraduate")
+gss <- gss %>% 
+  mutate(educ_cat = fct_relevel(educ_cat, educ_levels),
+         income_respondent = fct_relevel(income_respondent, income_levels))
+# check
+levels(gss$income_respondent)
+levels(gss$educ_cat)
+```
+
+Now we want to calculate proportion of income by education
+
+```{r}
+income_props <- gss %>% 
+  drop_na(educ_cat, income_respondent) %>% 
+  group_by(income_respondent, educ_cat) %>% 
+  tally() %>% 
+  group_by(educ_cat) %>% 
+  mutate(prop_income = n/sum(n)) %>% 
+  arrange(educ_cat)
+income_props
+```
+
+Now plot: stacked bar charts are your friends here, because everything adds up to 1. You can see the education gradient in income:
+
+```{r}
+ggplot(income_props, 
+       aes(x = educ_cat, y = prop_income, fill = income_respondent ))+
+  geom_bar(stat = "identity") + 
+  coord_flip()
+```
+
