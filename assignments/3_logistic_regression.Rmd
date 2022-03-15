@@ -1,0 +1,116 @@
+---
+title: "SOC6707 Intermediate Data Analysis, Winter 2022"
+author: "Assignment 3"
+date: "Due date: March 29 11:59pm"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = FALSE)
+```
+
+# Details
+
+There are **100 points** in total. 
+
+You will need to submit both your answers to the questions and accompanying R code. You should submit:
+
+- your R Markdown file; and
+- the knitted PDF resulting from your R Markdown file. 
+
+Please submit both files via Quercus. 
+
+Remember to:
+
+- Label the answers to each question 
+- Label any graphs clearly with suitable axis labels and titles
+- Comment your code so that it is easy to understand
+
+\newpage 
+
+# Question 1
+
+This question relates to the future fertility intentions of a sample of women in the US. The dataset `intentions` is a cleaned version of the National Survey of Family Growth 2015-2017.  
+
+```{r}
+library(tidyverse)
+library(here)
+d <- read_csv(here("data/intentions.csv"))
+d
+```
+
+## a)
+
+i) Filter the dataset to just include women aged 25 and above
+ii) Create a new variable `bachelor_or_higher` that is equal to "yes" if a woman has a bachelor or post grad degree and "no" otherwise
+iii) Use the `fct_relevel` function to make the baseline category of `marital_formal` equal to "Never Married"
+iv) Report the resulting number of women in the sample
+
+```{r}
+d <- d %>% 
+  filter(age>24) %>% 
+  mutate(bachelor_or_higher = ifelse(edu=="Bachelor"|edu=="Post-Grad", "yes", "no")) %>% 
+  mutate(marital_formal = fct_relevel(marital_formal, "Never Married", after = 0))
+
+d %>% nrow()
+```
+
+
+## b)
+
+i) Calculate the proportion of women who want more kids by age group (`age_gp`) and education (`bachelor_or_higher`)
+ii) Create a bar plot that is the proportion of women who want more kids by age group (on the x-axis) and education (fill of bars).  Use `position = "dodge"` in the `geom_bar()` function to plot the bars by education group next to each other. Interpret what you see.
+
+```{r}
+d %>% 
+  group_by(age_gp, bachelor_or_higher, wants_more_kids) %>% 
+  tally() %>% 
+  group_by(age_gp, bachelor_or_higher) %>% 
+  summarize(prop_wants_more = n[wants_more_kids==1]/sum(n)) %>% 
+  ggplot(aes(age_gp, prop_wants_more, fill = bachelor_or_higher)) + 
+  geom_bar(stat = "identity", position = "dodge")
+```
+
+## c)
+
+Do the same thing as b) but now by parity (current number of children) and marital status (`marital_formal`):
+
+i) Calculate the proportion of women who want more kids by parity and marital status (`marital_formal`)
+ii) Create a bar plot that is the proportion of women who want more kids by parity (on the x-axis) and marital status (fill of bars).  Use `position = "dodge"` in the `geom_bar()` function to plot the bars by marital status group next to each other. Interpret what you see.
+
+
+```{r}
+d %>% 
+  group_by(parity, marital_formal, wants_more_kids) %>% 
+  tally() %>% 
+  group_by(parity, marital_formal) %>% 
+  summarize(prop_wants_more = n[wants_more_kids==1]/sum(n)) %>% 
+  ggplot(aes(parity, prop_wants_more, fill = marital_formal)) + 
+  geom_bar(stat = "identity", position = "dodge")
+```
+
+
+## d)
+
+i) Run a logistic regression with `wants_more_kids` as the dependent variable, and `parity`, `age`, `marital_formal` and `bachelor_or_higher` as the independent variables.
+ii) Interpret the coefficient on parity
+iii) Interpret the cofficient on marital status = "Married"
+
+```{r}
+mod <- glm(data = d, wants_more_kids ~ parity+age+marital_formal+bachelor_or_higher, family = "binomial")
+summary(mod)
+```
+
+## e) 
+
+Use the model in d) to estimate the probability that a married woman aged 35, with 2 kids and PhD[^1], wants more kids.
+
+```{r}
+
+
+log_odds <- coef(mod)[1] + coef(mod)[2]*2+coef(mod)[3]*35+ coef(mod)[5] + coef(mod)[6]
+
+exp(log_odds)/(1+exp(log_odds))
+```
+
+[^1]: This is Monica.
