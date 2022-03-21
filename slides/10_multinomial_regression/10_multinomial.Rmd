@@ -1,7 +1,7 @@
 ---
 title: "SOC6707 Intermediate Data Analysis"
 author: "Monica Alexander"
-date: "Week 7: Interactions, Polytomous outcomes"
+date: "Week 10: Interactions, Polytomous outcomes"
 output: 
   beamer_presentation:
     slide_level: 2
@@ -21,6 +21,14 @@ library(here)
 
 ## Notes
 
+- Assignment 3
+- Research project analysis
+- Plan for remaining weeks
+    + today: multinomial
+    + next week: miscellaneous research design
+    + week 12: presentations
+
+
 
 # Polytomous outcomes
 
@@ -32,7 +40,7 @@ library(here)
     + Voted Liberal, Conservative, NDP, Greens
     + Cause of death
 - Polytomous response variables can be ordered or not, and can be modeled in several different ways
-- Here I will focus on **multinomial logistic regression**, which is for unordered outcomes
+- Here I will focus on **multinomial logistic regression**
 
 ## Multinomial response
 
@@ -99,6 +107,20 @@ $$
 \normalsize
 where $\log \left(\frac{P\left(Y_{i}=j \mid X_{i 1}, \ldots, X_{i k}\right)}{P\left(Y_{i}=1 \mid X_{i 1}, \ldots, X_{i k}\right)}\right)$ is known as the "log odds of response
 category 'j' versus response category 1" and $\beta_{jk}$ are a set of unknown parameters subject to the constraint that $\beta_{1k} = 0$ for all $k$.
+
+## Multinomial logistic regression
+
+\footnotesize
+$$
+\log \left(\frac{P\left(Y_{i}=j \mid X_{i 1}, \ldots, X_{i k}\right)}{P\left(Y_{i}=1 \mid X_{i 1}, \ldots, X_{i k}\right)}\right)=\eta_{j i}=\beta_{j 0}+\beta_{j 1} X_{i 1}+\cdots+\beta_{j k} X_{i k} \quad \text { for } j=1, \ldots, J
+$$
+
+\normalsize
+what is category 1?
+
+- Doesn't really matter what it is
+- R will by default choose (what)?
+- But can change it to be what you want by re-leveling factors
 
 ## Multinomial logistic regression
 
@@ -189,7 +211,7 @@ Maybe the trickiest bit is to get everything into the right format to run the re
 Get data in wide format. Firstly, get the counts by covariate groups:
 
 \tiny
-```{r}
+```{r, echo = TRUE}
 infant_counts <- infant %>% 
   group_by(race, mom_age, gest, preterm, cod_group) %>% 
   tally(name = "deaths")
@@ -237,23 +259,45 @@ coef(mod_mn)
 exp(coef(mod_mn))
 ```
 
-\normalsize
+\footnotesize
 - The odds of exogenous causes compared to perinatal causes for NHW babies is 9% more than NHB babies, holding everything else constant
 - The odds of respiratory/heart causes compared to perinatal causes for preterm babies is 90% less than for non-preterm babies, holding everything else constant
 - The odds of respiratory/heart causes compared to congenital malformations for preterm babies is $\exp(-2.25 + 2.42) = 1.18$ times (or 18% more) than for non-preterm babies, holding everything else constant
 
 ## Predicted probabilities
 
-For mothers of age 30
+- Now let's convert some of these coefficients into predicted probabilities
+- We age, race, and preterm as covariates
+- Easiest to pick an age (hold the continuous variable constant at a particular value) and then get predicted probabilities for all other groups
+- Create a new tibble with all the groups we want predicted probabilities for:
 
 \tiny
 ```{r, echo = TRUE}
 predict_df <- tibble(race = rep(c("NHW", "NHB"), each = 2),
        mom_age = 30,
        preterm = rep(c(0,1),2)) 
-preds <- bind_cols(predict_df, as_tibble(predict(mod_mn, newdata = predict_df, type = 'probs')))
+predict_df
+```
+
+
+## Predicted probabilities
+
+Now get the predictions
+
+\tiny
+```{r, echo = TRUE}
+preds <- as_tibble(predict(mod_mn, newdata = predict_df, type = 'probs'))
 preds
 ```
+
+And join these back onto the tibble:
+
+```{r, echo = TRUE}
+preds <- bind_cols(predict_df, preds)
+preds
+```
+
+
 
 ## Predicted probabilities
 
