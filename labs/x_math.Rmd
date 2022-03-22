@@ -1,0 +1,49 @@
+---
+title: "Math notation"
+author: "Monica Alexander"
+date: "22/03/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Math notation
+
+Important stuff:
+
+1.  To write math, it needs to be within dollar signs. 
+- One dollar sign is the same line, two dollar signs is a new line and indented. For example, compare $X$ versus
+$$
+X
+$$
+
+2. Subscripts and superscripts.
+- You write subscripts with an underscore _, and superscripts with a ^. So for example, $X_i$ and $Y^2$.
+- If you want more than one thing in the sub or super script, you need to use curly brackets. For example, $X_{i1}$ 
+
+3. Greek symbols
+- To write greek symbols, you just type the word after a slash. So for example, $$
+Y_i = \beta_0 + \beta_1X_{i1}
+$$
+You can also do $\sigma^2$ e.g. for variance.
+
+4. Bars and hats
+- to do a bar over something (e.g. X bar to be the mean of X), you type
+$\bar{X}$.
+- in the same way, you can do hats e.g. for regression coefficient estimates
+$\hat{\beta}_1$
+
+5. If you want to refer to an equation by number, instead of using the double dollar signs, you can use
+\begin{equation}
+\label{my_equation}
+Y = \beta_0 + \beta_1X
+\end{equation}
+
+I am talking about my equation \ref{my_equation} in the text. 
+
+
+
+
+

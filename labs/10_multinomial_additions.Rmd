@@ -1,0 +1,309 @@
+---
+title: 'Week 10:  Multinomial regression'
+author: "Monica Alexander"
+date: "18/03/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+Packages:
+
+```{r}
+library(tidyverse)
+library(here)
+library(nnet) # for multinomial
+```
+
+
+# Multinomial
+
+Question of interest: how does infant mortality cause of death vary by race, mother's age and prematurity?
+
+## Data prep
+
+Read in infant data and do some cleaning:
+
+```{r}
+d <- read_rds(here("data/infant.RDS"))
+d <- d %>% 
+  mutate(neo_death = ifelse(aged<=28, 1, 0),
+         cod_group = case_when(
+           str_starts(cod, "peri") ~ "perinatal",
+           cod %in% c("other", "unknown") ~ "other/unknown",
+           cod %in% c("sids", "maltreatment", "infection") ~ "exogenous",
+           cod %in% c("resp", "heart") ~ "respiratory/heart",
+           TRUE ~ "congenital malformations"
+         ),
+         preterm = ifelse(gest<37, 1, 0)) %>% 
+  filter(gest<99, !is.na(mom_age_group))
+
+infant <- d %>% select(race, mom_age, gest, preterm, cod_group)
+infant
+```
+
+Graph by race from lecture: Proportions by cause and race
+
+Calculate proportion of deaths by cause and race
+
+```{r}
+prop_table <- infant %>% 
+  group_by(race, cod_group) %>% 
+  tally() %>% 
+  group_by(race) %>% 
+  mutate(prop = n/sum(n))
+prop_table
+
+```
+Graph this using a bar chart:
+
+```{r}
+prop_table <- prop_table %>% 
+  mutate(cod_group = fct_reorder(cod_group, prop))
+
+ggplot(data = prop_table, aes(x = cod_group, y = prop, fill = race)) +
+  geom_bar(stat = "identity", position = "dodge") + 
+  coord_flip()
+```
+
+
+
+(Quick code)
+```{r}
+infant %>% 
+  group_by(race, cod_group) %>%
+  tally() %>% 
+  group_by(race) %>% 
+  mutate(prop = n/sum(n)) %>%
+  mutate(cod_group = fct_reorder(cod_group, -prop)) %>% 
+  ggplot(aes(cod_group, prop, fill  = race)) + geom_bar(stat = "identity", position = 'dodge') + 
+  labs(title = "Proportion of infant deaths by cause", x = "cause", y = "proportion") + 
+  theme_bw() + 
+  scale_fill_brewer(palette = "Set1")
+```
+To run the regression, we need to do two things:
+
+- Get counts by group
+- Make the dataframe into wide format
+
+First step: get counts by group.
+
+```{r}
+counts_by_group <- infant %>% 
+  group_by(race, mom_age, preterm, cod_group) %>% 
+  tally(name = "deaths")
+
+counts_by_group
+```
+Second step: make this dataframe into wide format
+
+```{r}
+infant_wide <- counts_by_group %>% 
+  pivot_wider(names_from = "cod_group", values_from = "deaths")
+infant_wide
+
+```
+Replace the NAs with 0s
+
+
+```{r}
+infant_wide <- infant_wide %>% 
+  mutate(`congenital malformations` = ifelse(is.na(`congenital malformations`),0,`congenital malformations`),
+         `exogenous` = ifelse(is.na(`exogenous`),0,`exogenous`),
+         `other/unknown` = ifelse(is.na(`other/unknown`),0,`other/unknown`),
+         `perinatal` = ifelse(is.na(`perinatal`),0,`perinatal`),
+         `respiratory/heart` = ifelse(is.na(`respiratory/heart`),0,`respiratory/heart`))
+
+infant_wide
+
+```
+Alternative (quicker)
+
+```{r}
+infant_wide <- infant_wide %>% 
+  mutate(across(`congenital malformations`:`respiratory/heart`, ~ifelse(is.na(.), 0, .)))
+```
+
+
+
+
+Making into wide format (quick code)
+
+```{r}
+# infant_wide <- infant %>% 
+#   group_by(race, mom_age, gest, preterm, cod_group) %>% 
+#   tally(name = "deaths") %>% 
+#   pivot_wider(names_from = cod_group, values_from = deaths) %>% 
+#   mutate_all(.funs = funs(ifelse(is.na(.), 0, .)))
+# head(infant_wide)
+```
+
+Making the Y variable:
+
+```{r}
+infant_wide$Y <- as.matrix(infant_wide[,c("perinatal",
+                                          "exogenous",
+                                          "congenital malformations", 
+                                          "respiratory/heart", "other/unknown")])
+head(infant_wide$Y)
+```
+
+## Regression
+
+Regressing counts by cause of death (matrix) against race, mother's age and preterm
+
+```{r}
+mod_mn <- multinom(Y ~ race+ mom_age+ preterm, data = infant_wide)
+summary(mod_mn)
+
+```
+
+Pull out coefficients: (use the `coef` function)
+
+```{r}
+coef(mod_mn)
+exp(coef(mod_mn))
+
+# look at particular coefficients from the table
+
+exp(coef(mod_mn)[3,3])
+
+```
+
+Exercise: plot coefficient estimates and standard errors.
+
+```{r}
+coefs <- coef(mod_mn)
+ses <- summary(mod_mn)[["standard.errors"]]
+
+
+coefs_long <- bind_cols(cause = rownames(coefs),as_tibble(coefs)) %>% 
+  pivot_longer(-cause, names_to = "covariate", values_to = "value")
+
+
+ses_long <- bind_cols(cause = rownames(ses),as_tibble(ses)) %>% 
+  pivot_longer(-cause, names_to = "covariate", values_to = "se")
+
+
+coef_se_long <- coefs_long %>% 
+  left_join(ses_long)
+
+ggplot(data = coef_se_long, aes(x = cause, y = value)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymin = value - se, ymax = value+se), width = NA) + 
+  facet_wrap(~covariate, scales = "free_x") + 
+  coord_flip() +
+  geom_hline(yintercept = 0, lty = 2)
+ 
+```
+
+
+
+## Predicted probabilities
+
+Want predicted probabilities of deaths by cause for mothers aged 30. 
+
+First step: need a tibble that lists all possible combinations of our covariates (race and preterm) for mothers aged 30. 
+
+```{r}
+predict_df <- tibble(race = c("NHW", "NHW", "NHB", "NHB"), preterm = c(0,1,0,1), mom_age = 30)
+```
+
+Next step: use the data above in the `predict` function, which returns predicted values based on our model.
+
+```{r}
+predicted_probs <- predict(mod_mn, type = "probs", newdata = predict_df)
+```
+
+Now I want to make this into a tibble, and also join back the data used to predict. 
+
+```{r}
+preds <- bind_cols(predict_df, as_tibble(predicted_probs))
+preds
+```
+
+
+
+(quick code:)
+
+```{r}
+predict_df <- tibble(race = rep(c("NHW", "NHB"), each = 2),
+       mom_age = 30,
+       preterm = rep(c(0,1),2)) 
+preds <- bind_cols(predict_df, as_tibble(predict(mod_mn, newdata = predict_df, type = 'probs')))
+preds
+```
+
+Now plot. First step is get the data in long format.
+
+```{r}
+preds_long <- preds %>% 
+  pivot_longer(perinatal:`other/unknown`, names_to = "cause", values_to = "probability")
+```
+
+Now we can plot this, using a stacked bar chart
+
+```{r}
+
+preds_long <- preds_long %>% 
+  mutate(preterm = ifelse(preterm==0, "full-term", "preterm"))
+
+
+ggplot(preds_long, aes(x = race, y = probability, fill = cause)) + 
+  geom_bar(stat = "identity") + 
+  facet_grid(~preterm)
+```
+
+
+
+Plot:
+
+```{r}
+preds %>% 
+  pivot_longer(`perinatal`:`other/unknown`, names_to = "cod_group", values_to = "probability") %>% 
+  mutate(preterm = ifelse(preterm==1, "pre-term", "full-term")) %>% 
+  ggplot(aes(race, probability, fill = cod_group)) + 
+  geom_bar(stat = "identity")+
+  facet_grid(~preterm) +
+  ggtitle("Predicted probabilities of infant death by race, prematurity and cause\nMothers aged 30")
+```
+
+# Interactions
+
+```{r}
+mod_mn_2 <- multinom(Y ~ race+ mom_age+ preterm + race*preterm, data = infant_wide)
+summary(mod_mn_2)
+```
+
+Exogenous cf perintal:
+
+```{r}
+exp(coef(mod_mn_2))
+```
+
+```{r}
+coef(mod_mn_2)
+```
+
+
+- NHB mothers with pre-term babies: Compared to NHB with full-term, NHB with pre-term are 97% less likely to die from exo cf perintal
+- Compared to NHB full-term babies, NHW full-term babies are 15% less likely to die from exo cf perinatal
+- Compared to NHW full-term babies, NHW preterm babies are exp(-3.53+0.13) 97% less likely to die from exo cf perintal
+
+```{r}
+exp(coef(mod_mn_2)[1,4])
+exp(coef(mod_mn_2)[1,4] +coef(mod_mn_2)[1,5] )
+```
+
+
+
+
+
+
+
+
+
+

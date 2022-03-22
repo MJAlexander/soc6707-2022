@@ -85,13 +85,33 @@ means %>%
 
 Figure 1 is a scatter plot of log of break and enter rate versus hh size., This shows.....
 
-```{r, fig.height = 4, fig.cap="my fig"}
+```{r, fig.cap="my fig"}
 ggplot(data = d, aes(x = hh_size, y = log(BreakAndEnter_Rate2020))) +
   geom_point() +
   labs(title = "Break and enter rate versus household size")
 ```
 
+```{r}
+ggplot(data = d, aes(x = log(income), y = log(BreakAndEnter_Rate2020))) +
+  geom_point() +
+  labs(title = "Break and enter rate versus household size")
+```
 
 
+# Model
+
+I'm interested in how BE rates vary by income, and controlling for pop density, seniors and HH size. My model is
+
+$$
+Y_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + \beta_3X_{i3} + \beta_4X_{i4}
+$$
+where
+
+- $i$ refers to the $i$th ward
+- $Y_i$ is log of break and enter rate in ward $i$
+- $X_{i1}$ is the log income in ward $i$
+- $X_{i2}$ is pop density in ward $i$
+- $X_{i3}$ is proportion of ward $i$ that are aged 65+
+- $X_{i4}$ is average household size in ward $i$
 
 
